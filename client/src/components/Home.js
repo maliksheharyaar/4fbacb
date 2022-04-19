@@ -65,7 +65,7 @@ const Home = ({ user, logout }) => {
   const postMessage = (body) => {
     try {
       const data = saveMessage(body);
-
+      
       if (!body.conversationId) {
         addNewConvo(body.recipientId, data.message);
       } else {
@@ -93,9 +93,10 @@ const Home = ({ user, logout }) => {
   );
 
   const addMessageToConversation = useCallback(
-    (data) => {
+    async (data) => {
       // if sender isn't null, that means the message needs to be put in a brand new convo
-      const { message, sender = null } = data;
+      const { message, sender = null } = await data; //added async/await as data was being initalized before the promise was returned resulting in undefined data value
+      
       if (sender !== null) {
         const newConvo = {
           id: message.conversationId,
@@ -105,7 +106,7 @@ const Home = ({ user, logout }) => {
         newConvo.latestMessageText = message.text;
         setConversations((prev) => [newConvo, ...prev]);
       }
-
+      
       conversations.forEach((convo) => {
         if (convo.id === message.conversationId) {
           convo.messages.push(message);
