@@ -21,7 +21,7 @@ const Home = ({ user, logout }) => {
 
   const [conversations, setConversations] = useState([]);
   const [activeConversation, setActiveConversation] = useState(null);
-
+  const [isUpdateChat, setIsUpdateChat] = useState(false);
   const classes = useStyles();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
@@ -62,9 +62,9 @@ const Home = ({ user, logout }) => {
     });
   };
 
-  const postMessage = (body) => {
+  const postMessage =  async (body) => {
     try {
-      const data = saveMessage(body);
+      const data =  await saveMessage(body).then(setIsUpdateChat(true));
       
       if (!body.conversationId) {
         addNewConvo(body.recipientId, data.message);
@@ -93,9 +93,9 @@ const Home = ({ user, logout }) => {
   );
 
   const addMessageToConversation = useCallback(
-    async (data) => {
+       (data) => {
       // if sender isn't null, that means the message needs to be put in a brand new convo
-      const { message, sender = null } = await data; //added async/await as data was being initalized before the promise was returned resulting in undefined data value
+      const { message, sender = null } =  data; 
       
       if (sender !== null) {
         const newConvo = {
@@ -106,14 +106,14 @@ const Home = ({ user, logout }) => {
         newConvo.latestMessageText = message.text;
         setConversations((prev) => [newConvo, ...prev]);
       }
-      
+
       conversations.forEach((convo) => {
         if (convo.id === message.conversationId) {
           convo.messages.push(message);
           convo.latestMessageText = message.text;
         }
       });
-      setConversations(conversations);
+      setConversations(conversations);  
     },
     [setConversations, conversations]
   );
@@ -185,6 +185,7 @@ const Home = ({ user, logout }) => {
       try {
         const { data } = await axios.get('/api/conversations');
         setConversations(data);
+        setIsUpdateChat(false);
       } catch (error) {
         console.error(error);
       }
@@ -192,7 +193,7 @@ const Home = ({ user, logout }) => {
     if (!user.isFetching) {
       fetchConversations();
     }
-  }, [user]);
+  }, [user, isUpdateChat]);
 
   const handleLogout = async () => {
     if (user && user.id) {
