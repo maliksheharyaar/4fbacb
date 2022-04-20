@@ -2,19 +2,9 @@ import React from 'react';
 import { Box } from '@material-ui/core';
 import { SenderBubble, OtherUserBubble } from '.';
 import moment from 'moment';
-//import { makeStyles } from '@material-ui/core/styles';
 
-/*const useStyles = makeStyles(() => ({
-  messageDirection: {
-    display: 'flex',
-    flexDirection:'column-reverse',
-    
-  },
-}));*/
-
-const Messages = (props) => {
+  const Messages = (props) => {
   const { messages, otherUser, userId } = props;
-  //const classes = useStyles();
   const reversedMessages = messages.slice(0).reverse();
   
 
