@@ -132,6 +132,16 @@ const Home = ({ user, logout }) => {
     setActiveConversation(username);
   };
 
+  const setUnreadMessages = (conversations) => {
+    if(conversations.length !== 0){
+      conversations.forEach((convo) => {
+        convo.unReadMessages = convo.messages.filter((message) => message.isRead === false && message.senderId !== user.id);
+
+      });
+    }
+
+  };
+  
   const addOnlineUser = useCallback((id) => {
     setConversations((prev) =>
       prev.map((convo) => {
@@ -221,6 +231,8 @@ const Home = ({ user, logout }) => {
           clearSearchedUsers={clearSearchedUsers}
           addSearchedUsers={addSearchedUsers}
           setActiveChat={setActiveChat}
+          setUnreadMessages={setUnreadMessages}
+          activeConversation={activeConversation}
         />
         <ActiveChat
           activeConversation={activeConversation}

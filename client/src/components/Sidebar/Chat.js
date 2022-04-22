@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box } from '@material-ui/core';
+import { Box, Typography } from '@material-ui/core';
 import { BadgeAvatar, ChatContent } from '../Sidebar';
 import { makeStyles } from '@material-ui/core/styles';
 
@@ -16,17 +16,25 @@ const useStyles = makeStyles((theme) => ({
     },
   },
 }));
+const UnreadMessages = ({ unReadMessages}) => (
+  unReadMessages.length !== 0 && (
+    <Typography> {unReadMessages.length} </Typography>
+  ) 
+)
 
-const Chat = ({ conversation, setActiveChat }) => {
+const Chat = ({ conversation, setActiveChat, activeConversation }) => {
   const classes = useStyles();
   const { otherUser } = conversation;
-
-  const handleClick = async (conversation) => {
+  const handleClick = async (conversation, activeConversation) => {
+    conversation.unReadMessages = [];
+    conversation.messages.map((message) => message.isRead = true);
     await setActiveChat(conversation.otherUser.username);
+    if (activeConversation !== {} && activeConversation !== undefined ) {
+    }
   };
 
   return (
-    <Box onClick={() => handleClick(conversation)} className={classes.root}>
+    <Box onClick={() => handleClick(conversation, activeConversation)} className={classes.root}>
       <BadgeAvatar
         photoUrl={otherUser.photoUrl}
         username={otherUser.username}
@@ -34,6 +42,7 @@ const Chat = ({ conversation, setActiveChat }) => {
         sidebar={true}
       />
       <ChatContent conversation={conversation} />
+      <UnreadMessages unReadMessages={conversation.unReadMessages}/>
     </Box>
   );
 };
