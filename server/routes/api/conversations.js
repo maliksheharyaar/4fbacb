@@ -79,4 +79,29 @@ router.get("/", async (req, res, next) => {
   }
 });
 
+router.put("/", async (req, res, next) => {
+  try {
+    if (!req.user) {
+      return res.sendStatus(401);
+    }
+
+    const { id, otherUser } = req.body;
+    const conversationId = id;
+    const senderId = otherUser.id;
+
+    //Find messages from the conversation that haven't been read
+    const conversation = await Message.update({ isRead: true }, {
+      where: {
+        conversationId: conversationId,
+        senderId: senderId,
+        isRead: false,
+      },
+
+    });
+
+    res.json(conversation);
+  } catch (error) {
+    next(error);
+  }
+});
 module.exports = router;

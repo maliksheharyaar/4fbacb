@@ -1,6 +1,6 @@
-import React from 'react';
-import { Box, Typography } from '@material-ui/core';
-import { BadgeAvatar, ChatContent } from '../Sidebar';
+import React, { useEffect } from 'react';
+import { Box } from '@material-ui/core';
+import { BadgeAvatar, ChatContent, UnreadMessagesContainer } from '../Sidebar';
 import { makeStyles } from '@material-ui/core/styles';
 
 const useStyles = makeStyles((theme) => ({
@@ -16,25 +16,31 @@ const useStyles = makeStyles((theme) => ({
     },
   },
 }));
-const UnreadMessages = ({ unReadMessages}) => (
-  unReadMessages.length !== 0 && (
-    <Typography> {unReadMessages.length} </Typography>
-  ) 
-)
 
-const Chat = ({ conversation, setActiveChat, activeConversation }) => {
+const Chat = ({ conversation, setActiveChat, updateMessageStatus, queueUpdateMessage, activeConversation, setUnreadMessages }) => {
   const classes = useStyles();
   const { otherUser } = conversation;
-  const handleClick = async (conversation, activeConversation) => {
+  const handleClick = async (conversation) => {
     conversation.unReadMessages = [];
     conversation.messages.map((message) => message.isRead = true);
     await setActiveChat(conversation.otherUser.username);
-    if (activeConversation !== {} && activeConversation !== undefined ) {
+    if (conversation.id !== undefined && conversation.unReadMessages.length !== 0) {
+      await updateMessageStatus(conversation);
     }
   };
+  useEffect(() => {
+    if (conversation.id !== undefined && activeConversation !== null && conversation.otherUser.username !== activeConversation) {
+      setUnreadMessages(conversation);
+    } 
+    if (conversation.id !== undefined && activeConversation !== null && conversation.otherUser.username === activeConversation) {
+      conversation.unReadMessages = [];
+      conversation.messages.map((message) => message.isRead = true);
+      queueUpdateMessage(conversation);
+    }
 
+  },[conversation.messages, activeConversation, setUnreadMessages, queueUpdateMessage])
   return (
-    <Box onClick={() => handleClick(conversation, activeConversation)} className={classes.root}>
+    <Box onClick={() => handleClick(conversation)} className={classes.root}>
       <BadgeAvatar
         photoUrl={otherUser.photoUrl}
         username={otherUser.username}
@@ -42,7 +48,7 @@ const Chat = ({ conversation, setActiveChat, activeConversation }) => {
         sidebar={true}
       />
       <ChatContent conversation={conversation} />
-      <UnreadMessages unReadMessages={conversation.unReadMessages}/>
+      <UnreadMessagesContainer unReadMessages={conversation.unReadMessages || []} />
     </Box>
   );
 };
