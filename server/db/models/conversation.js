@@ -1,6 +1,6 @@
 const { Op } = require("sequelize");
 const db = require("../db");
-const Message = require("./message");
+
 
 const Conversation = db.define("conversation", {});
 
@@ -15,6 +15,10 @@ Conversation.findConversation = async function (user1Id, user2Id) {
       user2Id: {
         [Op.or]: [user1Id, user2Id]
       }
+      //For the database redesign the above two options for the where clause should be replaced with the one commented out below along with simlar changes thorughout the app.
+      /*userId: {
+        [Op.or]: [userId]
+      },*/
     }
   });
 
