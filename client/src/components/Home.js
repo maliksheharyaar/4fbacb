@@ -53,9 +53,12 @@ const Home = ({ user, logout }) => {
     return data;
   };
 
-  const updateMessageStatus = useCallback(async (body) => {
-    const { data } = await axios.put('/api/conversations', body);
-    return data;
+  const updateMessageStatus = useCallback(async (id, otherUser) => {
+      const body = {
+        conversationId: id,
+        otherUser: otherUser
+      }
+      await axios.put('/api/conversations/read-status', body);
   }, [])
 
   const sendMessage = (data, body) => {
@@ -138,13 +141,13 @@ const Home = ({ user, logout }) => {
   };
 
   const setUnreadMessages = useCallback(
-    (conversation) => {
+    (id) => {
       setConversations((prev) => {
         return prev.map((convo) => {
 
-          if (convo.id === conversation.id) {
+          if (convo.id === id) {
             const convoCopy = { ...convo };
-            convoCopy.unReadMessages = convoCopy.messages.filter((message) => message.isRead === false && message.senderId !== user.id);
+            convoCopy.unReadMessages = (convoCopy.messages.filter((message) => message.isRead === false && message.senderId !== user.id)).length;
             return convoCopy;
           }
           return convo;
@@ -152,12 +155,25 @@ const Home = ({ user, logout }) => {
       });
     }, [setConversations, user.id])
 
-  const queueUpdateMessage = useCallback(async (body) => {
-    const data = await updateMessageStatus(body)
-    if (body.id) {
-      setUnreadMessages(body);
+  const activeConvoMessageUpdate = useCallback((id, otherUser) => {
+    updateMessageStatus(id, otherUser)
+    if (id) {
+      setConversations((prev) => {
+        return prev.map((convo) => {
+          if (convo.id === id) {
+            const convoCopy = { ...convo };
+            const convoMsgsCopy = [...convoCopy.messages];
+            convoMsgsCopy.forEach((message) => message.isRead = true);
+            convo.messages = convoMsgsCopy;
+            convoCopy.unReadMessages = 0;
+            return convoCopy;
+          }
+          return convo;
+        });
+
+      });
     }
-  }, [setUnreadMessages, updateMessageStatus])
+  }, [setConversations, updateMessageStatus]);
   const addOnlineUser = useCallback((id) => {
     setConversations((prev) =>
       prev.map((convo) => {
@@ -220,13 +236,7 @@ const Home = ({ user, logout }) => {
     const fetchConversations = async () => {
       try {
         const { data } = await axios.get('/api/conversations');
-        setConversations(
-          data.map((convo) => {
-            const convoCopy = { ...convo };
-            convoCopy.unReadMessages = convoCopy.messages.filter((message) => message.isRead === false && message.senderId !== user.id);
-            return convoCopy;
-          })
-        );
+        setConversations(data);
       } catch (error) {
         console.error(error);
       }
@@ -253,8 +263,7 @@ const Home = ({ user, logout }) => {
           clearSearchedUsers={clearSearchedUsers}
           addSearchedUsers={addSearchedUsers}
           setActiveChat={setActiveChat}
-          updateMessageStatus={updateMessageStatus}
-          queueUpdateMessage={queueUpdateMessage}
+          activeConvoMessageUpdate={activeConvoMessageUpdate}
           activeConversation={activeConversation}
           setUnreadMessages={setUnreadMessages}
         />

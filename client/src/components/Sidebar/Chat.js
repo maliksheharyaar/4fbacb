@@ -17,28 +17,28 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const Chat = ({ conversation, setActiveChat, updateMessageStatus, queueUpdateMessage, activeConversation, setUnreadMessages }) => {
+const Chat = ({ conversation, setActiveChat, activeConvoMessageUpdate, activeConversation, setUnreadMessages }) => {
   const classes = useStyles();
   const { otherUser } = conversation;
   const handleClick = async (conversation) => {
-    conversation.unReadMessages = [];
-    conversation.messages.map((message) => message.isRead = true);
     await setActiveChat(conversation.otherUser.username);
-    if (conversation.id !== undefined && conversation.unReadMessages.length !== 0) {
-      await updateMessageStatus(conversation);
+    if (conversation?.id !== undefined && conversation.unReadMessages !== 0) {
+      await activeConvoMessageUpdate(conversation.id, conversation.otherUser);
     }
   };
   useEffect(() => {
-    if (conversation.id !== undefined && activeConversation !== null && conversation.otherUser.username !== activeConversation) {
-      setUnreadMessages(conversation);
-    } 
-    if (conversation.id !== undefined && activeConversation !== null && conversation.otherUser.username === activeConversation) {
-      conversation.unReadMessages = [];
-      conversation.messages.map((message) => message.isRead = true);
-      queueUpdateMessage(conversation);
+    if (conversation?.id && activeConversation) {
+      if (conversation.otherUser.username !== activeConversation) {
+        setUnreadMessages(conversation.id);
+      } else {
+        activeConvoMessageUpdate(conversation.id, conversation.otherUser);
+      }
+    }else if(conversation?.id){
+
+        setUnreadMessages(conversation.id);
     }
 
-  },[conversation.messages, activeConversation, setUnreadMessages, queueUpdateMessage])
+  },[conversation.id, conversation.messages, conversation.otherUser, activeConversation, setUnreadMessages, activeConvoMessageUpdate])
   return (
     <Box onClick={() => handleClick(conversation)} className={classes.root}>
       <BadgeAvatar
@@ -48,7 +48,7 @@ const Chat = ({ conversation, setActiveChat, updateMessageStatus, queueUpdateMes
         sidebar={true}
       />
       <ChatContent conversation={conversation} />
-      <UnreadMessagesContainer unReadMessages={conversation.unReadMessages || []} />
+      <UnreadMessagesContainer unReadMessages={conversation.unReadMessages || 0} />
     </Box>
   );
 };
