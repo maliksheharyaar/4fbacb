@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Box } from '@material-ui/core';
-import { BadgeAvatar, ChatContent } from '../Sidebar';
+import { BadgeAvatar, ChatContent, UnreadMessagesContainer } from '../Sidebar';
 import { makeStyles } from '@material-ui/core/styles';
 
 const useStyles = makeStyles((theme) => ({
@@ -17,14 +17,28 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const Chat = ({ conversation, setActiveChat }) => {
+const Chat = ({ conversation, setActiveChat, activeConvoMessageUpdate, activeConversation, setUnreadMessages }) => {
   const classes = useStyles();
   const { otherUser } = conversation;
-
   const handleClick = async (conversation) => {
     await setActiveChat(conversation.otherUser.username);
+    if (conversation?.id !== undefined && conversation.unReadMessages !== 0) {
+      await activeConvoMessageUpdate(conversation.id, conversation.otherUser);
+    }
   };
+  useEffect(() => {
+    if (conversation?.id && activeConversation) {
+      if (conversation.otherUser.username !== activeConversation) {
+        setUnreadMessages(conversation.id);
+      } else {
+        activeConvoMessageUpdate(conversation.id, conversation.otherUser);
+      }
+    }else if(conversation?.id){
 
+        setUnreadMessages(conversation.id);
+    }
+
+  },[conversation.id, conversation.messages, conversation.otherUser, activeConversation, setUnreadMessages, activeConvoMessageUpdate])
   return (
     <Box onClick={() => handleClick(conversation)} className={classes.root}>
       <BadgeAvatar
@@ -34,6 +48,7 @@ const Chat = ({ conversation, setActiveChat }) => {
         sidebar={true}
       />
       <ChatContent conversation={conversation} />
+      <UnreadMessagesContainer unReadMessages={conversation.unReadMessages || 0} />
     </Box>
   );
 };
