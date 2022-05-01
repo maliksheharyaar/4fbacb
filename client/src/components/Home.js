@@ -53,10 +53,6 @@ const Home = ({ user, logout }) => {
     return data;
   };
 
-  const updateMessageStatus = useCallback(async (body) => {
-    const { data } = await axios.put('/api/conversations', body);
-    return data;
-  }, [])
 
   const sendMessage = (data, body) => {
     socket.emit('new-message', {
@@ -87,7 +83,7 @@ const Home = ({ user, logout }) => {
       setConversations((prev) => {
         return prev.map((convo) => {
           if (convo.otherUser.id === recipientId) {
-            const convoCopy = { ...convo };
+            const convoCopy = { ...convo};
             convoCopy.messages = [...convoCopy.messages, message];
             convoCopy.latestMessageText = message.text;
             convoCopy.id = message.conversationId; 
@@ -97,7 +93,7 @@ const Home = ({ user, logout }) => {
         });
       });
 
-    },
+      },
     [setConversations]
   );
 
@@ -137,27 +133,7 @@ const Home = ({ user, logout }) => {
     setActiveConversation(username);
   };
 
-  const setUnreadMessages = useCallback(
-    (conversation) => {
-      setConversations((prev) => {
-        return prev.map((convo) => {
 
-          if (convo.id === conversation.id) {
-            const convoCopy = { ...convo };
-            convoCopy.unReadMessages = convoCopy.messages.filter((message) => message.isRead === false && message.senderId !== user.id);
-            return convoCopy;
-          }
-          return convo;
-        })
-      });
-    }, [setConversations, user.id])
-
-  const queueUpdateMessage = useCallback(async (body) => {
-    const data = await updateMessageStatus(body)
-    if (body.id) {
-      setUnreadMessages(body);
-    }
-  }, [setUnreadMessages, updateMessageStatus])
   const addOnlineUser = useCallback((id) => {
     setConversations((prev) =>
       prev.map((convo) => {
@@ -220,13 +196,7 @@ const Home = ({ user, logout }) => {
     const fetchConversations = async () => {
       try {
         const { data } = await axios.get('/api/conversations');
-        setConversations(
-          data.map((convo) => {
-            const convoCopy = { ...convo };
-            convoCopy.unReadMessages = convoCopy.messages.filter((message) => message.isRead === false && message.senderId !== user.id);
-            return convoCopy;
-          })
-        );
+        setConversations(data);
       } catch (error) {
         console.error(error);
       }
@@ -253,10 +223,6 @@ const Home = ({ user, logout }) => {
           clearSearchedUsers={clearSearchedUsers}
           addSearchedUsers={addSearchedUsers}
           setActiveChat={setActiveChat}
-          updateMessageStatus={updateMessageStatus}
-          queueUpdateMessage={queueUpdateMessage}
-          activeConversation={activeConversation}
-          setUnreadMessages={setUnreadMessages}
         />
         <ActiveChat
           activeConversation={activeConversation}
