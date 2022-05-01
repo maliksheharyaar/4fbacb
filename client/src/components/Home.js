@@ -53,6 +53,7 @@ const Home = ({ user, logout }) => {
     return data;
   };
 
+
   const sendMessage = (data, body) => {
     socket.emit('new-message', {
       message: data.message,
@@ -131,6 +132,7 @@ const Home = ({ user, logout }) => {
   const setActiveChat = (username) => {
     setActiveConversation(username);
   };
+
 
   const addOnlineUser = useCallback((id) => {
     setConversations((prev) =>
